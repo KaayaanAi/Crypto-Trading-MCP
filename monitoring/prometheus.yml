@@ -1,0 +1,92 @@
+# Prometheus configuration for Crypto Trading MCP System
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+# Alerting rules configuration
+rule_files:
+  # - "alert_rules.yml"
+
+# Alertmanager configuration (uncomment if using alerting)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets:
+#           - alertmanager:9093
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Main crypto trading application
+  - job_name: 'crypto-trader'
+    static_configs:
+      - targets: ['crypto-trader:8080']
+    metrics_path: /metrics
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # MCP Servers monitoring
+  - job_name: 'mcp-news'
+    static_configs:
+      - targets: ['crypto-trader:8001']
+    metrics_path: /metrics
+    scrape_interval: 60s
+
+  - job_name: 'mcp-technical'
+    static_configs:
+      - targets: ['crypto-trader:8002']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  - job_name: 'mcp-social'
+    static_configs:
+      - targets: ['crypto-trader:8003']
+    metrics_path: /metrics
+    scrape_interval: 60s
+
+  - job_name: 'mcp-binance'
+    static_configs:
+      - targets: ['crypto-trader:8004']
+    metrics_path: /metrics
+    scrape_interval: 15s
+
+  - job_name: 'mcp-risk'
+    static_configs:
+      - targets: ['crypto-trader:8005']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  - job_name: 'mcp-ai'
+    static_configs:
+      - targets: ['crypto-trader:8006']
+    metrics_path: /metrics
+    scrape_interval: 60s
+
+  # Redis monitoring (if redis_exporter is used)
+  # - job_name: 'redis'
+  #   static_configs:
+  #     - targets: ['redis-exporter:9121']
+
+  # MongoDB monitoring (if mongodb_exporter is used)
+  # - job_name: 'mongodb'
+  #   static_configs:
+  #     - targets: ['mongodb-exporter:9216']
+
+  # Ollama monitoring (if it exposes metrics)
+  # - job_name: 'ollama'
+  #   static_configs:
+  #     - targets: ['ollama:11434']
+  #   metrics_path: /metrics
+
+  # Node exporter for system metrics (if deployed)
+  # - job_name: 'node'
+  #   static_configs:
+  #     - targets: ['node-exporter:9100']
+
+# Recording rules for aggregating frequently queried metrics
+# rule_files:
+#   - "recording_rules.yml"

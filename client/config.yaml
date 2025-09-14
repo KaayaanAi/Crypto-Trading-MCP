@@ -1,0 +1,179 @@
+# Crypto Trading MCP System Configuration
+
+trading:
+  # Primary trading symbol
+  symbol: "BTCUSDT"
+
+  # Trading mode: swing (hours/days), intraday (minutes/hours), scalp (seconds/minutes)
+  mode: "swing"
+
+  # Risk management
+  risk_per_trade: 0.02  # 2% of account per trade
+  max_positions: 3      # Maximum concurrent positions
+
+  # Signal requirements
+  min_confidence: 0.7   # Minimum confidence score to execute trade
+
+  # Position sizing
+  position_sizing_method: "fixed_percent"  # fixed_percent, kelly, volatility_adjusted
+
+  # Trading hours (UTC)
+  trading_hours:
+    start: "00:00"
+    end: "23:59"
+    enabled: true
+
+analysis:
+  # Data collection settings
+  lookback_periods: 20
+  analysis_interval: 300  # seconds between analysis cycles
+
+  # Technical indicators to use
+  indicators:
+    - "RSI"
+    - "MACD"
+    - "EMA"
+    - "BB"  # Bollinger Bands
+    - "VWAP"
+
+  # Timeframes for analysis
+  timeframes:
+    - "1h"
+    - "4h"
+    - "1d"
+
+  # Confidence scoring weights
+  weights:
+    technical: 0.3
+    news: 0.2
+    social: 0.2
+    ai: 0.3
+
+risk_management:
+  # Stop loss and take profit
+  stop_loss_percent: 0.05      # 5% stop loss
+  take_profit_ratio: 2.0       # Risk:Reward = 1:2
+  trailing_stop: true
+  trailing_stop_percent: 0.02  # 2% trailing stop
+
+  # Portfolio limits
+  max_drawdown: 0.15          # 15% max drawdown
+  daily_loss_limit: 0.10      # 10% daily loss limit
+
+  # Position limits
+  max_position_size: 0.20     # 20% of account per position
+  max_correlation: 0.7        # Max correlation between positions
+
+# MCP Server Configuration
+mcp_servers:
+  news:
+    enabled: true
+    timeout: 30
+    retry_attempts: 3
+
+  technical:
+    enabled: true
+    timeout: 15
+    retry_attempts: 3
+
+  social:
+    enabled: true
+    timeout: 30
+    retry_attempts: 2
+
+  binance:
+    enabled: true
+    timeout: 10
+    retry_attempts: 5
+
+  risk:
+    enabled: true
+    timeout: 5
+    retry_attempts: 3
+
+  ai:
+    enabled: true
+    timeout: 60
+    retry_attempts: 2
+
+# Data Sources Configuration
+data_sources:
+  news:
+    sources:
+      - "https://cointelegraph.com/rss"
+      - "https://coindesk.com/arc/outboundfeeds/rss/"
+      - "https://decrypt.co/feed"
+    update_interval: 1800  # 30 minutes
+
+  social:
+    twitter:
+      keywords: ["#bitcoin", "#crypto", "#btc"]
+      max_tweets: 100
+      update_interval: 900  # 15 minutes
+
+    reddit:
+      subreddits: ["cryptocurrency", "bitcoin", "ethtrader"]
+      max_posts: 50
+      update_interval: 1800  # 30 minutes
+
+  technical:
+    data_provider: "binance"
+    update_interval: 60  # 1 minute
+
+  market:
+    exchanges: ["binance"]
+    pairs: ["BTCUSDT", "ETHUSDT"]  # Additional pairs for correlation analysis
+
+# AI Configuration
+ai:
+  model: "llama2"
+  temperature: 0.3
+  max_tokens: 1000
+
+  analysis_prompts:
+    sentiment: |
+      Analyze the following crypto market data and provide a sentiment score from -1 (very bearish) to 1 (very bullish):
+      {data}
+
+    technical: |
+      Based on the following technical indicators, provide a trading signal (buy/sell/hold) with confidence score:
+      {indicators}
+
+    综合: |
+      Synthesize the following market analysis data and provide a comprehensive trading recommendation:
+      Technical: {technical}
+      News: {news}
+      Social: {social}
+
+# Monitoring and Alerting
+monitoring:
+  metrics:
+    enabled: true
+    port: 9090
+
+  alerts:
+    telegram:
+      enabled: false
+      bot_token: ""
+      chat_id: ""
+
+    email:
+      enabled: false
+      smtp_server: ""
+      username: ""
+      password: ""
+      recipients: []
+
+  logging:
+    level: "INFO"
+    file: "logs/crypto_trader.log"
+    max_size: "100MB"
+    backup_count: 5
+
+# Backtesting Configuration
+backtesting:
+  enabled: false
+  start_date: "2024-01-01"
+  end_date: "2024-12-31"
+  initial_balance: 10000
+  commission: 0.001  # 0.1% per trade

@@ -12,8 +12,15 @@ import os
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timedelta
 import aiohttp
-import feedparser
-from bs4 import BeautifulSoup
+try:
+    import feedparser
+except ImportError:
+    feedparser = None
+
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    BeautifulSoup = None
 
 # Add shared modules to path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'shared'))
@@ -28,6 +35,12 @@ from constants import NewsSentiment
 # Initialize server and logger
 server = Server("crypto-news-mcp")
 logger = setup_logger("crypto-news-mcp", log_file="logs/news_server.log")
+
+# Log import warnings after logger is initialized
+if feedparser is None:
+    logger.warning("feedparser not installed - RSS feeds will be unavailable")
+if BeautifulSoup is None:
+    logger.warning("BeautifulSoup not installed - HTML parsing will be limited")
 
 
 # News source configurations
@@ -115,6 +128,10 @@ class NewsAnalyzer:
                 rss_content = await response.text()
 
             # Parse RSS feed
+            if feedparser is None:
+                logger.error("feedparser not available - cannot parse RSS")
+                return []
+
             feed = feedparser.parse(rss_content)
             news_items = []
 
@@ -128,9 +145,15 @@ class NewsAnalyzer:
                     # Extract description
                     description = ""
                     if hasattr(entry, 'summary'):
-                        description = BeautifulSoup(entry.summary, 'html.parser').get_text().strip()
+                        if BeautifulSoup:
+                            description = BeautifulSoup(entry.summary, 'html.parser').get_text().strip()
+                        else:
+                            description = entry.summary[:500]  # Simple fallback
                     elif hasattr(entry, 'description'):
-                        description = BeautifulSoup(entry.description, 'html.parser').get_text().strip()
+                        if BeautifulSoup:
+                            description = BeautifulSoup(entry.description, 'html.parser').get_text().strip()
+                        else:
+                            description = entry.description[:500]  # Simple fallback
 
                     news_item = NewsItem(
                         title=entry.title,

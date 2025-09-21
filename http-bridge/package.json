@@ -1,0 +1,49 @@
+{
+  "name": "crypto-trading-mcp-http-bridge",
+  "version": "1.0.0",
+  "description": "HTTP bridge for Crypto Trading MCP servers - n8n compatible",
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "check-updates": "npx npm-check-updates",
+    "update-all": "npx npm-check-updates -u && npm install",
+    "audit": "npm audit fix --force",
+    "test": "node tests/validate.js",
+    "health": "curl -f http://localhost:8080/health || exit 1"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "latest",
+    "express": "latest",
+    "ws": "latest",
+    "axios": "latest",
+    "dotenv": "latest",
+    "cors": "latest",
+    "helmet": "latest",
+    "compression": "latest",
+    "express-rate-limit": "latest",
+    "pino": "latest",
+    "pino-pretty": "latest"
+  },
+  "devDependencies": {
+    "nodemon": "latest",
+    "eslint": "latest",
+    "prettier": "latest"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "crypto-trading",
+    "n8n",
+    "json-rpc",
+    "express",
+    "websocket"
+  ],
+  "author": "Crypto Trading MCP System",
+  "license": "MIT"
+}

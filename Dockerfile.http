@@ -1,0 +1,94 @@
+# Multi-stage build for Crypto Trading MCP HTTP Bridge
+# Supports both Node.js HTTP server and Python MCP servers
+
+# Stage 1: Node.js dependencies
+FROM node:22-alpine AS node-builder
+
+# Install latest npm
+RUN npm install -g npm@latest
+
+# Set working directory
+WORKDIR /app/http-bridge
+
+# Copy Node.js project files
+COPY http-bridge/package*.json ./
+
+# Install Node.js dependencies
+RUN npm ci --only=production && npm cache clean --force
+
+# Stage 2: Python dependencies
+FROM python:3.11-slim AS python-builder
+
+# Set environment variables for Python
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Install system dependencies and create virtual environment
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/* \
+    && python -m venv /opt/venv
+
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy requirements and install Python dependencies
+WORKDIR /tmp
+COPY requirements.txt ./
+RUN pip install --no-cache-dir --upgrade 'pip>=23.0' && \
+    pip install --no-cache-dir --requirement requirements.txt
+
+# Stage 3: Production image with Node.js + Python
+FROM node:22-alpine AS production
+
+# Install Python and system dependencies, create non-root user
+RUN apk add --no-cache \
+    bash=5.2.21-r0 \
+    curl=8.5.0-r0 \
+    py3-pip=23.3.1-r0 \
+    python3=3.11.9-r0 \
+    && ln -sf python3 /usr/bin/python \
+    && addgroup -g 1001 -S trader \
+    && adduser -S trader -u 1001 -G trader
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV NODE_ENV=production
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy Python virtual environment from builder
+COPY --from=python-builder /opt/venv /opt/venv
+
+# Copy Node.js dependencies from builder
+COPY --from=node-builder /app/http-bridge/node_modules /app/http-bridge/node_modules
+
+# Set working directory
+WORKDIR /app
+
+# Copy application code
+COPY --chown=trader:trader . .
+
+# Create logs directory and health check script
+RUN mkdir -p logs http-bridge/logs && \
+    chown -R trader:trader logs http-bridge/logs && \
+    printf '#!/bin/bash\nset -e\n\n# Check if HTTP server is responding\ncurl -f http://localhost:8080/health >/dev/null 2>&1 || exit 1\n\n# Check if at least one Python MCP server is running\nif ! pgrep -f "python.*main.py" >/dev/null; then\n  printf "No Python MCP servers running\\n"\n  exit 1\nfi\n\nprintf "Health check passed\\n"\nexit 0\n' > /app/healthcheck.sh && \
+    chmod +x /app/healthcheck.sh && \
+    chown trader:trader /app/healthcheck.sh
+
+# Switch to non-root user
+USER trader
+
+# Copy environment template
+COPY --chown=trader:trader http-bridge/.env.example /app/.env.example
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD ["/app/healthcheck.sh"]
+
+# Expose HTTP bridge port
+EXPOSE 8080
+
+# Default command - start HTTP bridge
+CMD ["node", "http-bridge/server.js"]

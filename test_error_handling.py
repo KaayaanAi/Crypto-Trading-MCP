@@ -219,9 +219,10 @@ def test_error_severity_and_logging():
                     limit=50
                 )
             else:
+                from exceptions import ErrorSeverity
                 raise TradingSystemError(
                     f"Test {severity} error",
-                    severity=getattr(__import__('exceptions'), 'ErrorSeverity')(severity.upper())
+                    severity=ErrorSeverity(severity.lower())
                 )
         except Exception as e:
             print(f"✅ {severity.capitalize()} severity error: {e}")

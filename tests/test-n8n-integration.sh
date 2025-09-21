@@ -65,7 +65,7 @@ test_endpoint() {
 
     # Extract response body and status code
     status_code=$(echo "$response" | tail -n1)
-    response_body=$(echo "$response" | head -n -1)
+    response_body=$(echo "$response" | sed '$d')
 
     if [ "$status_code" = "$expected_status" ]; then
         log_success "$test_name - Status: $status_code"

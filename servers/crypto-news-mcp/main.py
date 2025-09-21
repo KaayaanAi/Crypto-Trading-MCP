@@ -27,8 +27,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'shared'))
 
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
-from shared_types import NewsItem, NewsAnalysis, BaseResponse
-from utils import setup_logger, safe_float, utc_now, make_http_request, cache
+from shared_types import NewsItem, NewsAnalysis
+from utils import setup_logger, safe_float, utc_now, cache
 from constants import NewsSentiment
 
 
@@ -140,7 +140,12 @@ class NewsAnalyzer:
                     # Parse publication date
                     published_at = utc_now()
                     if hasattr(entry, 'published_parsed') and entry.published_parsed:
-                        published_at = datetime(*entry.published_parsed[:6])
+                        # Ensure we have enough elements for datetime constructor
+                        parsed_time = entry.published_parsed
+                        if len(parsed_time) >= 6:
+                            published_at = datetime(*parsed_time[:6])
+                        else:
+                            logger.warning(f"Incomplete published_parsed data for entry: {getattr(entry, 'title', 'Unknown')}")
 
                     # Extract description
                     description = ""
@@ -269,8 +274,8 @@ class NewsAnalyzer:
             topic_counts[topic] = topic_counts.get(topic, 0) + 1
 
         key_topics = sorted(topic_counts.keys(),
-                           key=lambda x: topic_counts[x],
-                           reverse=True)[:5]
+                            key=lambda x: topic_counts[x],
+                            reverse=True)[:5]
 
         return NewsAnalysis(
             news_items=relevant_items,

@@ -2,7 +2,7 @@
 Shared type definitions for the Crypto Trading MCP System
 """
 
-from typing import Dict, List, Optional, Union, Any
+from typing import Dict, List, Optional, Any
 from datetime import datetime
 from enum import Enum
 from pydantic import BaseModel, Field

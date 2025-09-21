@@ -1,6 +1,6 @@
 {
   "name": "crypto-trading-mcp-http-bridge",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "HTTP bridge for Crypto Trading MCP servers - n8n compatible",
   "type": "module",
   "engines": {
@@ -18,22 +18,22 @@
     "health": "curl -f http://localhost:8080/health || exit 1"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "latest",
-    "express": "latest",
-    "ws": "latest",
-    "axios": "latest",
-    "dotenv": "latest",
-    "cors": "latest",
-    "helmet": "latest",
-    "compression": "latest",
-    "express-rate-limit": "latest",
-    "pino": "latest",
-    "pino-pretty": "latest"
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "express": "^4.19.2",
+    "ws": "^8.18.0",
+    "axios": "^1.7.7",
+    "dotenv": "^16.4.5",
+    "cors": "^2.8.5",
+    "helmet": "^8.0.0",
+    "compression": "^1.7.4",
+    "express-rate-limit": "^7.4.1",
+    "pino": "^9.4.0",
+    "pino-pretty": "^11.2.2"
   },
   "devDependencies": {
-    "nodemon": "latest",
-    "eslint": "latest",
-    "prettier": "latest"
+    "nodemon": "^3.1.7",
+    "eslint": "^9.12.0",
+    "prettier": "^3.3.3"
   },
   "keywords": [
     "mcp",

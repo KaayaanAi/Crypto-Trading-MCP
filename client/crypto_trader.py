@@ -11,28 +11,26 @@ import asyncio
 import sys
 import os
 import yaml
-import json
-import ssl
 import aiohttp
-from typing import Dict, Any, List, Optional, Tuple
-from datetime import datetime, timedelta
+from typing import Dict, Any, List, Optional
+from datetime import datetime
 from dataclasses import dataclass
 import logging
 
 # Load .env file explicitly
 from dotenv import load_dotenv
-load_dotenv()
 
 # Add shared modules to path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'shared'))
 
 from utils import setup_logger, load_env_var, utc_now, MetricsCollector, create_secure_connector
-from shared_types import TradingDecision, TradingSignal, MarketAnalysis
 from constants import Trading, SystemConfig, ApiRateLimits
 from exceptions import (
-    TradingSystemError, MarketDataError, ConfigurationError, NetworkError,
-    ValidationError, handle_error, validate_required_params, safe_execute
+    TradingSystemError, MarketDataError, ConfigurationError,
+    handle_error
 )
+
+load_dotenv()
 
 
 # Configure logging
@@ -229,7 +227,10 @@ class MCPConnectionManager:
                                 change_percent = 0.0
                                 volume = 0.0
 
-                        logger.info(f"✅ Real market data: {symbol} price ${current_price:,.2f} ({change_percent:+.2f}%)")
+                        logger.info(
+                            f"✅ Real market data: {symbol} price ${current_price:,.2f} "
+                            f"({change_percent:+.2f}%)"
+                        )
 
                         return {
                             "success": True,

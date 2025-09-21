@@ -1,6 +1,16 @@
-# Crypto Trading MCP Client System
+# Crypto Trading MCP System
 
 An advanced modular crypto trading system built on the Model Context Protocol (MCP) architecture. This system orchestrates multiple specialized MCP servers for comprehensive market analysis and automated trading.
+
+## 🆕 Recent Updates (v1.1.0)
+
+✅ **Security Fixed**: Complete SSL/TLS security implementation - all certificate bypass vulnerabilities resolved
+✅ **HTTP Bridge Added**: n8n integration support with RESTful API endpoints
+✅ **Error Handling**: Comprehensive error handling and runtime protection
+✅ **Code Quality**: Standardized formatting, linting, and type safety
+✅ **Dependencies**: All packages updated to latest stable versions
+
+👨 **Ready for production deployment with enterprise-grade security!**
 
 ## 🏗️ Architecture Overview
 
@@ -11,21 +21,24 @@ An advanced modular crypto trading system built on the Model Context Protocol (M
 └─────────────────┬───────────────────────────────────────────┘
                   │ Orchestrates all MCP servers
                   │
-    ┌─────────────┼─────────────┐
-    │             │             │
-    ▼             ▼             ▼
-┌─────────┐  ┌─────────┐  ┌─────────┐
-│ News    │  │Technical│  │ Social  │
-│ MCP     │  │ MCP     │  │ MCP     │
-│ Server  │  │ Server  │  │ Server  │
-└─────────┘  └─────────┘  └─────────┘
-    │             │             │
-    ▼             ▼             ▼
-┌─────────┐  ┌─────────┐  ┌─────────┐
-│Binance  │  │ Risk    │  │   AI    │
-│ MCP     │  │ MCP     │  │  MCP    │
-│ Server  │  │ Server  │  │ Server  │
-└─────────┘  └─────────┘  └─────────┘
+┌─────────────────┼─────────────────┐ 🆕 HTTP Bridge (n8n)
+│                 │                 │ ┌─────────────────────┐
+│    ┌─────────────┼─────────────┐   │ │   HTTP Bridge       │
+│    │             │             │   │ │  (port 8080)        │
+│    ▼             ▼             ▼   │ │ REST API + WebSocket│
+│┌─────────┐  ┌─────────┐  ┌─────────┐ │ └─────────────────────┘
+││ News    │  │Technical│  │ Social  │ │           │
+││ MCP     │  │ MCP     │  │ MCP     │ │           ▼
+││ Server  │  │ Server  │  │ Server  │ │    ┌─────────────┐
+│└─────────┘  └─────────┘  └─────────┘ │    │    n8n      │
+│    │             │             │     │    │ Workflows   │
+│    ▼             ▼             ▼     │    └─────────────┘
+│┌─────────┐  ┌─────────┐  ┌─────────┐ │
+││Binance  │  │ Risk    │  │   AI    │ │
+││ MCP     │  │ MCP     │  │  MCP    │ │
+││ Server  │  │ Server  │  │ Server  │ │
+│└─────────┘  └─────────┘  └─────────┘ │
+└─────────────────────────────────────┘
 ```
 
 ## 🚀 Components
@@ -43,6 +56,13 @@ An advanced modular crypto trading system built on the Model Context Protocol (M
 - **crypto_trader.py**: Orchestrates all MCP servers
 - **mcp_manager.py**: Manages MCP connections
 - **config.yaml**: Trading parameters and settings
+
+### 🆕 HTTP Bridge (NEW in v1.1.0):
+- **http-bridge/server.js**: Express.js server with WebSocket support
+- **RESTful API**: All MCP functionality via HTTP endpoints
+- **n8n Integration**: Direct workflow integration support
+- **Security**: Rate limiting, CORS, helmet protection
+- **Health Checks**: Monitoring and status endpoints
 
 ## 🛠️ Installation
 
@@ -80,8 +100,10 @@ python client/crypto_trader.py
 ```
 
 ### Docker Deployment
+
+#### Traditional MCP Deployment
 ```bash
-# One-command deployment
+# Native MCP protocol deployment
 docker-compose up -d
 
 # Check status
@@ -91,6 +113,21 @@ docker-compose ps
 docker-compose logs -f crypto-trader
 ```
 
+#### 🆕 HTTP Bridge Deployment (for n8n)
+```bash
+# HTTP bridge deployment for n8n integration
+docker-compose -f docker-compose.http.yml up -d
+
+# Check HTTP bridge status
+curl http://localhost:8080/health
+
+# Access API documentation
+curl http://localhost:8080/api/docs
+
+# Test MCP server connection
+curl http://localhost:8080/api/servers/status
+```
+
 ## ⚙️ Configuration
 
 ### Environment Variables
@@ -98,6 +135,14 @@ docker-compose logs -f crypto-trader
 # Binance API
 BINANCE_API_KEY=your_binance_api_key
 BINANCE_SECRET_KEY=your_binance_secret_key
+
+# 🆕 Security Settings (v1.1.0)
+DISABLE_SSL_VERIFICATION=false  # Production: false, Dev: true for local testing
+
+# HTTP Bridge (when using n8n deployment)
+HTTP_BRIDGE_PORT=8080
+HTTP_BRIDGE_HOST=0.0.0.0
+CORS_ORIGINS=http://localhost:5678  # n8n default port
 BINANCE_TESTNET=true  # Set to false for live trading
 
 # Trading Parameters
@@ -132,6 +177,24 @@ risk_management:
   take_profit_ratio: 2.0  # Risk:Reward = 1:2
   max_drawdown: 0.15
 ```
+
+## 🔒 Security Features (v1.1.0)
+
+### Enterprise-Grade Security
+- **SSL/TLS Security**: Complete certificate validation, TLS 1.2+ enforcement
+- **Environment-Based Controls**: Secure production, flexible development
+- **Container Security**: Non-root execution, package version pinning
+- **Secret Management**: No hardcoded credentials, comprehensive .env templates
+- **API Security**: Rate limiting, CORS protection, helmet middleware
+- **Input Validation**: Comprehensive parameter validation and sanitization
+
+### Production Deployment Checklist
+- [ ] Set `DISABLE_SSL_VERIFICATION=false` (or remove completely)
+- [ ] Use real Binance API keys (not testnet)
+- [ ] Configure proper CORS origins for HTTP bridge
+- [ ] Set up monitoring and alerting
+- [ ] Review and test all error handling paths
+- [ ] Enable comprehensive logging
 
 ## 🔧 MCP Server Details
 

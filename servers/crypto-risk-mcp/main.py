@@ -136,6 +136,13 @@ class RiskCalculator:
                 avg_win = price_risk * 2  # 1:2 risk/reward
                 avg_loss = price_risk
 
+                # Protection against division by zero
+                if avg_win <= 0:
+                    raise PositionSizingError(
+                        "Invalid Kelly calculation: average win must be greater than zero",
+                        details={"avg_win": avg_win, "price_risk": price_risk}
+                    )
+
                 kelly_fraction = (win_rate * avg_win - (1 - win_rate) * avg_loss) / avg_win
                 kelly_fraction = max(0, min(kelly_fraction, RiskManagement.MAX_KELLY_FRACTION))
 

@@ -16,11 +16,9 @@ import os
 import hmac
 import hashlib
 import time
-import ssl
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 import aiohttp
-from decimal import Decimal
 
 # Load .env file explicitly
 from dotenv import load_dotenv
@@ -31,12 +29,12 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'shared'))
 
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
-from shared_types import PriceData, OrderRequest, OrderResponse, Position, AccountInfo, OrderSide, OrderType
-from utils import setup_logger, safe_float, utc_now, load_env_var, cache, RateLimiter, create_secure_connector
+# from shared_types import OrderSide, OrderType  # Types used in function signatures
+from utils import setup_logger, safe_float, utc_now, load_env_var, RateLimiter, create_secure_connector
 from constants import ApiRateLimits
 from exceptions import (
-    ApiError, ApiRateLimitError, MarketDataError, OrderExecutionError,
-    InvalidOrderError, InsufficientBalanceError, ConfigurationError,
+    ApiError, ApiRateLimitError, MarketDataError,
+    InvalidOrderError, ConfigurationError,
     MissingApiKeyError, NetworkError, TimeoutError, ValidationError,
     handle_error, validate_required_params, validate_numeric_range
 )
@@ -71,8 +69,14 @@ class BinanceClient:
             logger.info("Using Binance Mainnet")
 
         # Rate limiters
-        self.rate_limiter = RateLimiter(max_calls=ApiRateLimits.BINANCE_RATE_LIMIT_CALLS, window_seconds=ApiRateLimits.BINANCE_RATE_LIMIT_WINDOW)
-        self.order_rate_limiter = RateLimiter(max_calls=ApiRateLimits.BINANCE_ORDER_RATE_LIMIT_CALLS, window_seconds=ApiRateLimits.BINANCE_ORDER_RATE_LIMIT_WINDOW)
+        self.rate_limiter = RateLimiter(
+            max_calls=ApiRateLimits.BINANCE_RATE_LIMIT_CALLS,
+            window_seconds=ApiRateLimits.BINANCE_RATE_LIMIT_WINDOW
+        )
+        self.order_rate_limiter = RateLimiter(
+            max_calls=ApiRateLimits.BINANCE_ORDER_RATE_LIMIT_CALLS,
+            window_seconds=ApiRateLimits.BINANCE_ORDER_RATE_LIMIT_WINDOW
+        )
 
         self.session: Optional[aiohttp.ClientSession] = None
 
@@ -394,7 +398,6 @@ async def get_account_info() -> Dict[str, Any]:
 
             # Extract balances
             balances = []
-            total_btc_value = 0.0
 
             for balance in account_data["balances"]:
                 free_balance = safe_float(balance["free"])
@@ -469,7 +472,11 @@ async def place_order(
         if type.upper() == "STOP_LIMIT" and (price is None or stop_price is None):
             raise InvalidOrderError(
                 "Both price and stop_price are required for STOP_LIMIT orders",
-                details={"order_type": type.upper(), "price_provided": price is not None, "stop_price_provided": stop_price is not None}
+                details={
+                    "order_type": type.upper(),
+                    "price_provided": price is not None,
+                    "stop_price_provided": stop_price is not None
+                }
             )
 
         if price is not None:

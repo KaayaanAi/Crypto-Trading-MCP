@@ -14,7 +14,7 @@ from decimal import Decimal, ROUND_HALF_UP
 import aiohttp
 import backoff
 from tenacity import retry, stop_after_attempt, wait_exponential
-from constants import SystemConfig, Cache, Validation, Security, Utils
+from constants import SystemConfig, Cache, Validation, Utils
 
 
 # Logging setup
@@ -147,7 +147,7 @@ class RateLimiter:
     def __init__(self, max_calls: int, window_seconds: int = Utils.SECONDS_PER_MINUTE):
         self.max_calls = max_calls
         self.window_seconds = window_seconds
-        self.calls = []
+        self.calls: List[float] = []
 
     async def acquire(self):
         """Acquire rate limit token"""
@@ -155,14 +155,18 @@ class RateLimiter:
 
         # Remove old calls outside window
         self.calls = [call_time for call_time in self.calls
-                     if now - call_time < self.window_seconds]
+                      if now - call_time < self.window_seconds]
 
         # Check if we can make another call
-        if len(self.calls) >= self.max_calls:
+        while len(self.calls) >= self.max_calls:
             sleep_time = self.window_seconds - (now - self.calls[0])
             if sleep_time > 0:
                 await asyncio.sleep(sleep_time)
-                return await self.acquire()
+
+            # Refresh state after sleep
+            now = utc_now().timestamp()
+            self.calls = [call_time for call_time in self.calls
+                         if now - call_time < self.window_seconds]
 
         self.calls.append(now)
 

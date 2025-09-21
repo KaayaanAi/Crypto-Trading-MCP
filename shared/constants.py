@@ -17,11 +17,11 @@ Categories:
 - CACHE: Caching configuration
 """
 
-from typing import Dict, Any, List
 
 # =============================================================================
 # RISK MANAGEMENT CONSTANTS
 # =============================================================================
+
 
 class RiskManagement:
     """Risk management parameters and limits"""
